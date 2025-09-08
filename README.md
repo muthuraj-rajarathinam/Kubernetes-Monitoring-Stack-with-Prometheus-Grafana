@@ -67,10 +67,59 @@ This will spin up Prometheus, Grafana, Node Exporter, and your app.
 
 ---
 
-## 📈 Importing Dashboards
+## 🔎 How to See Node Exporter Data Yourself
 
-* Import **Prometheus 2.0 Overview (ID: 3662)** for Prometheus monitoring.
-* Create a custom dashboard to monitor your **App metrics**.
+If you want to check the raw metrics manually :
+
+### Option 1 : Port Forward (best for Docker Desktop)
+
+```bash
+kubectl port-forward svc/node-exporter 9100:9100
+```
+
+Now open → [http://localhost:9100/metrics](http://localhost:9100/metrics)
+👉 You’ll see plain text metrics like `node_cpu_seconds_total`, `node_memory_MemAvailable_bytes`, etc.
+
+---
+
+
+## Option 2 : Open Grafana
+
+Grafana has prebuilt dashboards for Node Exporter:
+
+1. On Dashboard left menu → **Create → Import**
+2. **Option 1: Dashboard ID** → enter `1860` (Node Exporter Full)
+3. **Option 2: Upload JSON** → you can download JSON from [Grafana Dashboards](https://grafana.com/grafana/dashboards/1860)
+4. Click **Load** → select your Prometheus data source → **Import**
+
+---
+
+## Explore Metrics
+
+Now your Grafana dashboard will show:
+
+* CPU usage (`node_cpu_seconds_total`)
+* Memory usage (`node_memory_*`)
+* Disk usage (`node_filesystem_*`)
+* Network traffic (`node_network_*`)
+
+You can hover, zoom in/out, and set refresh intervals (e.g., 5s, 10s).
+
+---
+
+## Optional – Custom Panels
+
+You can also create your own panels in Grafana:
+
+1. Click **+ → Dashboard → Add new panel**
+2. Select **Prometheus** as data source
+3. Enter a metric query, e.g.:
+
+   ```promql
+   node_cpu_seconds_total{mode="idle"}
+   ```
+4. Choose visualization type: graph, gauge, table, etc.
+5. Click **Apply**
 
 ---
 --
