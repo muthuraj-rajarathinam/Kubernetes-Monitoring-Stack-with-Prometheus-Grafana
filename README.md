@@ -33,7 +33,7 @@ manifests/
 ### 1️⃣ Clone the repo
 
 ```bash
-git clone https://github.com/<your-username>/k8s-prometheus-grafana.git
+git clone https://github.com/<your-username>/Kubernetes-Monitoring-Stack-with-Prometheus-Grafana.git
 cd k8s-prometheus-grafana/manifests
 ```
 
