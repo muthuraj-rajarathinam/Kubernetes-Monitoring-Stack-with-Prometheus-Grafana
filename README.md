@@ -253,8 +253,4 @@ containers:
 This project is open-source any one can use my project.
 
 
----
 
-If you want, I can also **add a subtle “visual hook” in the README** (like colored emojis, badges, and important highlights) to make it **instantly attractive to HR or a recruiter** without altering any technical content.
-
-Do you want me to do that?
