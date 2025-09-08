@@ -128,39 +128,118 @@ You can also create your own panels in Grafana:
 
 Here are some useful queries to get started 👇
 
-### 🖥️ Node Metrics (via Node Exporter)
+Perfect ✅ — let’s turn your **SaaS-style Flask app + Prometheus metrics** into something that looks great inside **Grafana dashboards**.
+I’ll give you a **list of useful Grafana queries**, explain what each one does, and also tell you **how to test (refresh/open multiple tabs/etc.)** to generate real data.
 
-* **CPU Usage per Core**
+---
+
+# 🔍 Prometheus Metrics in Your App
+
+From your Flask app, you expose these Prometheus metrics:
+
+* `http_requests_total{method, endpoint, http_status}` → counter
+* `http_request_duration_seconds{endpoint}` → histogram
+* `random_value` → gauge
+* `users_signed_up_total` → counter
+* `background_tasks_total` → counter
+
+---
+
+# 📊 Grafana Queries to Try
+
+## 1. **Requests per second (traffic load)**
 ```promql
-rate(node_cpu_seconds_total{mode="user"}[5m])
+rate(http_requests_total[1m])
 ```
+👉 Shows how many requests per second are being handled, grouped by method, endpoint, and status code.
+* This gives a **traffic dashboard** — useful for simulating load when you refresh tabs.
 
-* **Memory Usage**
+---
+
+## 2. **Requests split by endpoint**
 ```promql
-node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+sum by (endpoint) (rate(http_requests_total[1m]))
 ```
+👉 Compares which endpoints (`/`, `/signup`, `/healthz`) are hit most often.
+* Useful to see **popular features** in the app.
 
-* **Disk Usage %**
+---
+
+## 3. **Latency distribution**
 ```promql
-100 - (node_filesystem_free_bytes{fstype!="tmpfs"} * 100 / node_filesystem_size_bytes{fstype!="tmpfs"})
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint))
 ```
+👉 Shows **95th percentile latency per endpoint**.
+* Replace `0.95` with `0.5` for median, `0.99` for tail latency.
+* This is exactly what real SaaS companies monitor.
 
-* **Network Traffic (per interface)**
+---
+
+## 4. **User signups over time**
 ```promql
-rate(node_network_receive_bytes_total[5m])
+increase(users_signed_up_total[5m])
 ```
+👉 Number of new signups in the last 5 minutes.
+* Useful to see effect of clicking **"Get Started"** button.
 
-### 📦 App Metrics (if app exposes /metrics)
+---
 
-* **Total HTTP Requests**
+## 5. **Total signups**
 ```promql
-sum(rate(http_requests_total[5m]))
+users_signed_up_total
 ```
+👉 Just shows the total counter value of signups so far.
 
-* **Request Latency**
+---
+
+## 6. **Background tasks executed**
 ```promql
-histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+rate(background_tasks_total[1m])
 ```
+👉 Shows how often background jobs are firing (you have one every 5 seconds).
+* You’ll see a steady \~0.2 tasks/sec line.
+
+---
+
+## 7. **System random gauge (live changing value)**
+```promql
+random_value
+```
+👉 Current gauge value (updates every 5 seconds).
+* Can be plotted as a **live gauge panel** in Grafana.
+
+---
+
+# 🧪 How to Generate Data (Testing Tips)
+
+### 1. **Open app in multiple tabs**
+* Open `/` and `/dashboard` in **3–5 browser tabs**.
+* Each refresh generates **http\_requests\_total** metrics.
+
+### 2. **Simulate signups**
+* Click **“Get Started”** button multiple times.
+* This increments `users_signed_up_total`.
+* Grafana graph of `increase(users_signed_up_total[5m])` will spike.
+
+### 3. **Background job**
+* No need to do anything — every 5 seconds, `background_tasks_total` and `random_value` get updated.
+* Great for showing **constant system activity** in Grafana.
+
+### 4. **Simulate traffic load**
+Run this in terminal to hit endpoints repeatedly:
+```bash
+while true; do curl -s http://<your-service-ip>:5000/ > /dev/null; done
+```
+👉 Now `rate(http_requests_total[1m])` will spike in Grafana.
+
+### 5. **Auto refresh in Grafana**
+
+* In Grafana dashboard, set **Refresh Interval = 5s**.
+* Open multiple charts (requests/sec, latency, signups, gauge).
+* Watch them update live as you interact with the app.
+
+---
+
 
 ---
 
