@@ -56,7 +56,7 @@ This will spin up Prometheus, Grafana, Node Exporter, and your app.
 
 ## 🔗 Connecting Prometheus with Grafana
 
-1. Open Grafana → **Configuration → Data Sources → Add data source**.
+1. Open Grafana [http://localhost:9090](http://localhost:3000) → **Configuration → Data Sources → Add data source**.
 2. Select **Prometheus**.
 3. Enter Prometheus URL:
 
